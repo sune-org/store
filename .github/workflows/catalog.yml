@@ -5,7 +5,7 @@ jobs:
   c:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - run: >
           printf '['>catalog.json;c=;
           for f in *;do [ -f "$f" ]||continue;[ "${f:0:1}" = . ]&&continue;
