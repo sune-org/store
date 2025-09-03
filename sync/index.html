@@ -1,0 +1,309 @@
+<div id="githubSyncSune" class="p-4 bg-gray-50 border rounded-lg m-2">
+    <div class="space-y-4">
+        <div>
+            <label for="ghPathInput" class="block text-sm font-medium text-gray-700 mb-1">GitHub Sync Path</label>
+            <div class="flex items-center gap-2">
+                <input type="text" id="ghPathInput" placeholder="gh://owner/repo/path/to/your.sune" class="flex-1 w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm px-3 py-2 bg-white">
+                <button id="checkStatusBtn" class="inline-flex items-center justify-center p-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-700" title="Check Status">
+                    <i data-lucide="refresh-cw" class="h-5 w-5"></i>
+                </button>
+            </div>
+            <p class="mt-1 text-xs text-gray-500">Path to a `.sune` or `.json` file on GitHub for the active sune.</p>
+        </div>
+
+        <div>
+            <button id="syncBtn" class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
+                <i data-lucide="upload-cloud" class="h-5 w-5 mr-2"></i>
+                <span>Sync to GitHub</span>
+            </button>
+        </div>
+
+        <div>
+            <label for="logArea" class="block text-sm font-medium text-gray-700 mb-1">Logs</label>
+            <pre id="logArea" class="w-full h-48 p-3 rounded-md border border-gray-300 bg-gray-100 overflow-auto font-mono text-xs text-gray-600 whitespace-pre-wrap"></pre>
+        </div>
+    </div>
+</div>
+
+<script>
+(() => {
+    // Ensure this script runs only once and is self-contained.
+    if (window.sune_github_sync_initialized) return;
+    window.sune_github_sync_initialized = true;
+
+    const suneContainer = document.getElementById('githubSyncSune');
+    if (!suneContainer) return;
+
+    const ghPathInput = suneContainer.querySelector('#ghPathInput');
+    const checkStatusBtn = suneContainer.querySelector('#checkStatusBtn');
+    const syncBtn = suneContainer.querySelector('#syncBtn');
+    const logArea = suneContainer.querySelector('#logArea');
+
+    // SUNE.id is the ID of this sune, not the active one.
+    // So we'll use a dynamic key based on the *active* sune's ID.
+    const getCacheKey = (suneId) => `sune_github_sync_path_${suneId}`;
+
+    let worker;
+    const state = {
+        isBusy: false,
+        currentSha: null,
+        pathInfo: null,
+        lastCheckedSuneId: null,
+    };
+
+    const log = (message) => {
+        const timestamp = new Date().toLocaleTimeString();
+        logArea.textContent += `[${timestamp}] ${message}\n`;
+        logArea.scrollTop = logArea.scrollHeight;
+    };
+
+    const setBusy = (busy) => {
+        state.isBusy = busy;
+        checkStatusBtn.disabled = busy;
+        ghPathInput.disabled = busy;
+        if (busy) {
+            syncBtn.disabled = true;
+            checkStatusBtn.innerHTML = `<i data-lucide="loader-2" class="h-5 w-5 animate-spin"></i>`;
+        } else {
+            checkStatusBtn.innerHTML = `<i data-lucide="refresh-cw" class="h-5 w-5"></i>`;
+        }
+        lucide.createIcons();
+    };
+
+    const createWorker = () => {
+        const workerCode = `
+            const GITHUB_API = 'https://api.github.com';
+
+            async function apiCall(method, path, token, body = null) {
+                const headers = {
+                    'Authorization': \`token \${token}\`,
+                    'Accept': 'application/vnd.github.v3+json',
+                };
+                if (body) {
+                    headers['Content-Type'] = 'application/json';
+                }
+
+                const options = { method, headers };
+                if (body) {
+                    options.body = JSON.stringify(body);
+                }
+
+                try {
+                    const response = await fetch(GITHUB_API + path, options);
+                    if (method === 'HEAD') {
+                        return { ok: response.ok, status: response.status, headers: response.headers };
+                    }
+                    const data = response.status === 204 || response.status === 201 ? {} : await response.json();
+                    return { ok: response.ok, status: response.status, data };
+                } catch (error) {
+                    return { ok: false, error: error.message };
+                }
+            }
+            
+            self.onmessage = async (e) => {
+                const { type, pat, pathInfo, suneContentB64, sha } = e.data;
+                
+                if (!pat) {
+                    self.postMessage({ type: 'log', message: 'ERROR: GitHub PAT not found. Set it in Account Settings.' });
+                    self.postMessage({ type: 'error', reason: 'No PAT' });
+                    return;
+                }
+
+                const { owner, repo, path } = pathInfo;
+                const contentsPath = \`/repos/\${owner}/\${repo}/contents/\${path}\`;
+
+                if (type === 'check') {
+                    self.postMessage({ type: 'log', message: \`Checking for file: \${path} in \${owner}/\${repo}\` });
+                    const res = await apiCall('GET', contentsPath, pat);
+
+                    if (res.status === 404) {
+                        self.postMessage({ type: 'log', message: 'File not found. It will be created on first sync.' });
+                        // Check if repo exists
+                        const repoRes = await apiCall('GET', \`/repos/\${owner}/\${repo}\`, pat);
+                        if(repoRes.status === 404) {
+                            self.postMessage({ type: 'log', message: 'ERROR: Repository not found. Please create it on GitHub first.' });
+                            self.postMessage({ type: 'error', reason: 'Repo not found' });
+                        } else {
+                            self.postMessage({ type: 'status', exists: false, sha: null });
+                        }
+                    } else if (res.ok) {
+                        self.postMessage({ type: 'log', message: \`File found. SHA: \${res.data.sha}\` });
+                        self.postMessage({ type: 'status', exists: true, sha: res.data.sha });
+                    } else {
+                        self.postMessage({ type: 'log', message: \`ERROR: \${res.data?.message || 'Failed to check file status.'}\` });
+                        self.postMessage({ type: 'error', reason: res.data?.message });
+                    }
+                }
+
+                if (type === 'sync') {
+                    const commitMessage = sha ? \`Sync: Update sune configuration\` : \`Sync: Create sune configuration\`;
+                    const body = {
+                        message: commitMessage,
+                        content: suneContentB64,
+                    };
+                    if (sha) {
+                        body.sha = sha;
+                    }
+                    
+                    self.postMessage({ type: 'log', message: \`Committing to \${owner}/\${repo}/\${path}...\` });
+                    const res = await apiCall('PUT', contentsPath, pat, body);
+
+                    if (res.ok) {
+                        const newSha = res.data.content.sha;
+                        self.postMessage({ type: 'log', message: \`✅ Sync successful! New SHA: \${newSha}\` });
+                        self.postMessage({ type: 'sync_complete', newSha });
+                    } else {
+                        self.postMessage({ type: 'log', message: \`ERROR: \${res.data?.message || 'Failed to sync file.'}\` });
+                        self.postMessage({ type: 'error', reason: res.data?.message });
+                    }
+                }
+            };
+        `;
+        const blob = new Blob([workerCode], { type: 'application/javascript' });
+        return new Worker(URL.createObjectURL(blob));
+    };
+
+    const handleWorkerMessage = (e) => {
+        const { type, message, exists, sha, newSha, reason } = e.data;
+
+        if (type === 'log') {
+            log(message);
+        } else if (type === 'status') {
+            state.currentSha = sha;
+            syncBtn.disabled = false;
+            syncBtn.querySelector('span').textContent = exists ? 'Update on GitHub' : 'Create on GitHub';
+            setBusy(false);
+        } else if (type === 'sync_complete') {
+            state.currentSha = newSha;
+            syncBtn.querySelector('span').textContent = 'Update on GitHub';
+            log('Ready for next sync.');
+            setBusy(false);
+        } else if (type === 'error') {
+            setBusy(false);
+            syncBtn.disabled = true;
+        }
+    };
+    
+    const parseGhPath = (path) => {
+        const regex = /^gh:\/\/([a-zA-Z0-9\-\._]+)\/([a-zA-Z0-9\-\._]+)\/(.+\.(?:sune|json))$/;
+        const match = path.trim().match(regex);
+        if (!match) return null;
+        return {
+            owner: match[1],
+            repo: match[2],
+            path: match[3],
+        };
+    };
+
+    checkStatusBtn.addEventListener('click', () => {
+        const pathInfo = parseGhPath(ghPathInput.value);
+        if (!pathInfo) {
+            log('ERROR: Invalid GitHub path format. Use gh://owner/repo/path/to/file.sune');
+            return;
+        }
+
+        const pat = window.USER && window.USER.PAT;
+        if (!pat) {
+            log('ERROR: GitHub PAT not found. Please set it via the Account Settings menu.');
+            return;
+        }
+        
+        setBusy(true);
+        logArea.textContent = '';
+        log('Starting check...');
+        state.pathInfo = pathInfo;
+        worker.postMessage({ type: 'check', pat, pathInfo });
+    });
+
+    syncBtn.addEventListener('click', () => {
+        if (!state.pathInfo) {
+            log('ERROR: Please check status before syncing.');
+            return;
+        }
+
+        const pat = window.USER && window.USER.PAT;
+        if (!pat) {
+            log('ERROR: GitHub PAT not found. Please set it via the Account Settings menu.');
+            return;
+        }
+
+        setBusy(true);
+        log('Preparing sune data for sync...');
+
+        // Create a clean, serializable object from the active sune proxy
+        const activeSune = window.SUNE.active;
+        if (!activeSune) {
+             log('ERROR: No active sune found.');
+             setBusy(false);
+             return;
+        }
+        
+        // Match the export format which is an array containing the sune object
+        const suneData = [JSON.parse(JSON.stringify(activeSune))];
+        const suneString = JSON.stringify(suneData, null, 2);
+        const suneContentB64 = btoa(unescape(encodeURIComponent(suneString)));
+
+        log(`Sune "${activeSune.name}" data prepared.`);
+        worker.postMessage({
+            type: 'sync',
+            pat,
+            pathInfo: state.pathInfo,
+            suneContentB64,
+            sha: state.currentSha,
+        });
+    });
+
+    const loadStateForActiveSune = () => {
+        const activeSuneId = window.SUNE.id;
+        if (state.lastCheckedSuneId === activeSuneId) {
+            return; // No change
+        }
+
+        log(`Active sune changed to "${window.SUNE.name}". Loading its sync path.`);
+        state.lastCheckedSuneId = activeSuneId;
+        const cacheKey = getCacheKey(activeSuneId);
+        const savedPath = localStorage.getItem(cacheKey);
+
+        ghPathInput.value = savedPath || '';
+        state.pathInfo = null;
+        state.currentSha = null;
+        syncBtn.disabled = true;
+        syncBtn.querySelector('span').textContent = 'Sync to GitHub';
+        logArea.textContent = 'Enter a sync path and click the refresh button to check its status.';
+    };
+
+    ghPathInput.addEventListener('input', () => {
+        const activeSuneId = window.SUNE.id;
+        if (activeSuneId) {
+            const cacheKey = getCacheKey(activeSuneId);
+            localStorage.setItem(cacheKey, ghPathInput.value);
+        }
+        // As user types, the checked state becomes invalid
+        syncBtn.disabled = true;
+        state.currentSha = null;
+    });
+
+    const init = () => {
+        if (!window.SUNE || !window.USER) {
+            log('ERROR: Core Sune environment not found.');
+            suneContainer.classList.add('hidden');
+            return;
+        }
+        worker = createWorker();
+        worker.onmessage = handleWorkerMessage;
+        
+        // Check for active sune changes and update UI accordingly
+        setInterval(loadStateForActiveSune, 1000);
+
+        // Initial load
+        loadStateForActiveSune();
+
+        // Initial icon render
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    };
+
+    init();
+})();
+</script>
