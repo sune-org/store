@@ -5,11 +5,11 @@
     "pinned": false,
     "avatar": "",
     "url": "gh://sune-org/store@master/sync.sune",
-    "updatedAt": 1756927870194,
+    "updatedAt": 1756927954023,
     "settings": {
       "model": "openai/gpt-5",
       "temperature": 1,
-      "top_p": 0.99,
+      "top_p": 0.95,
       "top_k": 0,
       "frequency_penalty": 0,
       "presence_penalty": 0,
