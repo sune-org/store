@@ -9,7 +9,7 @@
     "settings": {
       "model": "openai/gpt-5",
       "temperature": 1,
-      "top_p": 0.98,
+      "top_p": 0.97,
       "top_k": 0,
       "frequency_penalty": 0,
       "presence_penalty": 0,
