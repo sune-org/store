@@ -5,14 +5,14 @@ jobs:
   c:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - run: >
+      - uses: actions/checkout@v4
+      - run: |
           printf '['>catalog.json;c=;
           for f in *;do [ -f "$f" ]||continue;[ "${f:0:1}" = . ]&&continue;
           printf '%s{"name":"%s","raw":"https://raw.githubusercontent.com/%s/%s/%s"}' "$c" "$f" "$GITHUB_REPOSITORY" "$GITHUB_REF_NAME" "$f">>catalog.json;
-          c=,;done;printf ']'
-          >>catalog.json;
-          git diff --quiet -- catalog.json||(
-          git add catalog.json;
-          git -c user.name=bot -c user.email=bot@users.noreply.github.com commit -m update;
-          git push )
+          c=,;done;printf ']'>>catalog.json
+          git config user.name bot
+          git config user.email bot@users.noreply.github.com
+          git add catalog.json
+          git commit -m update || true
+          git push
