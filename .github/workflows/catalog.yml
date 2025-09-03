@@ -9,8 +9,8 @@ jobs:
       - run: >
           printf '['>catalog.json;c=;
           for f in *;do [ -f "$f" ]||continue;[ "${f:0:1}" = . ]&&continue;
-          printf '%s{"name":"%s","raw":"https://raw.githubusercontent.com/%s/%s/%s","content":"' "$c" "$f" "$GITHUB_REPOSITORY" "$GITHUB_REF_NAME" "$f">>catalog.json;
-          base64 -w0 "$f">>catalog.json;printf '"}'>>catalog.json;c=,;done;printf ']'
+          printf '%s{"name":"%s","raw":"https://raw.githubusercontent.com/%s/%s/%s"}' "$c" "$f" "$GITHUB_REPOSITORY" "$GITHUB_REF_NAME" "$f">>catalog.json;
+          c=,;done;printf ']'
           >>catalog.json;
           git diff --quiet -- catalog.json||(
           git add catalog.json;
