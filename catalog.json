@@ -1,1 +1,16 @@
-[{"name":"SuneBuilder.sune","raw":"https://raw.githubusercontent.com/sune-org/store/main/SuneBuilder.sune"},{"name":"action_runner.sune","raw":"https://raw.githubusercontent.com/sune-org/store/main/action_runner.sune"},{"name":"catalog.json","raw":"https://raw.githubusercontent.com/sune-org/store/main/catalog.json"},{"name":"commit-history.sune","raw":"https://raw.githubusercontent.com/sune-org/store/main/commit-history.sune"},{"name":"commit.sune","raw":"https://raw.githubusercontent.com/sune-org/store/main/commit.sune"},{"name":"fetch.sune","raw":"https://raw.githubusercontent.com/sune-org/store/main/fetch.sune"},{"name":"git-reset.sune","raw":"https://raw.githubusercontent.com/sune-org/store/main/git-reset.sune"},{"name":"jsdelivr.sune","raw":"https://raw.githubusercontent.com/sune-org/store/main/jsdelivr.sune"},{"name":"marketplace.sune","raw":"https://raw.githubusercontent.com/sune-org/store/main/marketplace.sune"},{"name":"storage.sune","raw":"https://raw.githubusercontent.com/sune-org/store/main/storage.sune"},{"name":"sw.sune","raw":"https://raw.githubusercontent.com/sune-org/store/main/sw.sune"},{"name":"sync.sune","raw":"https://raw.githubusercontent.com/sune-org/store/main/sync.sune"},{"name":"terminal.sune","raw":"https://raw.githubusercontent.com/sune-org/store/main/terminal.sune"},{"name":"titles.sune","raw":"https://raw.githubusercontent.com/sune-org/store/main/titles.sune"}]
+[
+  {"name": "SuneBuilder.sune", "raw": "https://raw.githubusercontent.com/sune-org/store/main/SuneBuilder.sune"}
+,  {"name": "action_runner.sune", "raw": "https://raw.githubusercontent.com/sune-org/store/main/action_runner.sune"}
+,  {"name": "catalog.json", "raw": "https://raw.githubusercontent.com/sune-org/store/main/catalog.json"}
+,  {"name": "commit-history.sune", "raw": "https://raw.githubusercontent.com/sune-org/store/main/commit-history.sune"}
+,  {"name": "commit.sune", "raw": "https://raw.githubusercontent.com/sune-org/store/main/commit.sune"}
+,  {"name": "fetch.sune", "raw": "https://raw.githubusercontent.com/sune-org/store/main/fetch.sune"}
+,  {"name": "git-reset.sune", "raw": "https://raw.githubusercontent.com/sune-org/store/main/git-reset.sune"}
+,  {"name": "jsdelivr.sune", "raw": "https://raw.githubusercontent.com/sune-org/store/main/jsdelivr.sune"}
+,  {"name": "marketplace.sune", "raw": "https://raw.githubusercontent.com/sune-org/store/main/marketplace.sune"}
+,  {"name": "storage.sune", "raw": "https://raw.githubusercontent.com/sune-org/store/main/storage.sune"}
+,  {"name": "sw.sune", "raw": "https://raw.githubusercontent.com/sune-org/store/main/sw.sune"}
+,  {"name": "sync.sune", "raw": "https://raw.githubusercontent.com/sune-org/store/main/sync.sune"}
+,  {"name": "terminal.sune", "raw": "https://raw.githubusercontent.com/sune-org/store/main/terminal.sune"}
+,  {"name": "titles.sune", "raw": "https://raw.githubusercontent.com/sune-org/store/main/titles.sune"}
+]
