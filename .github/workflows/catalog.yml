@@ -8,8 +8,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: |
           echo "[" >catalog.json;c=;
-          for f in *;do [ -f "$f" ]||continue;[ "${f:0:1}" = . ]&&continue;raw="https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$GITHUB_REF_NAME/$f";
-          if [[ "$f" == *.sune ]];then s=$(jq '.[0]|del(.pinned,.settings.html,.settings.extension_html,.settings.script)' "$f" 2>/dev/null||echo null);echo "$c  {\"name\":\"$f\",\"raw\":\"$raw\",\"sune\":[$s]}">>catalog.json;else echo "$c  {\"name\":\"$f\",\"raw\":\"$raw\"}">>catalog.json;fi;c=,;done
+          for f in *.sune;do [ -f "$f" ]||continue;raw="https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$GITHUB_REF_NAME/$f";s=$(jq '.[0]|del(.pinned,.settings.html,.settings.extension_html,.settings.script)' "$f" 2>/dev/null||echo null);echo "$c  {\"name\":\"$f\",\"raw\":\"$raw\",\"sune\":[$s]}">>catalog.json;c=,;done
           echo "]" >>catalog.json
           t=$(mktemp);jq . catalog.json>"$t"&&mv "$t" catalog.json
           git config user.name bot
