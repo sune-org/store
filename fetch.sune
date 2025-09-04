@@ -5,7 +5,7 @@
     "pinned": false,
     "avatar": "",
     "url": "gh://sune-org/store@main/fetch.sune",
-    "updatedAt": 1757011457254,
+    "updatedAt": 1757011461032,
     "settings": {
       "model": "openai/gpt-5",
       "temperature": 1,
