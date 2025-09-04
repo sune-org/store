@@ -56,10 +56,6 @@
     ]
   },
   {
-    "name": "catalog.json",
-    "raw": "https://raw.githubusercontent.com/sune-org/store/main/catalog.json"
-  },
-  {
     "name": "commit-history.sune",
     "raw": "https://raw.githubusercontent.com/sune-org/store/main/commit-history.sune",
     "sune": [
