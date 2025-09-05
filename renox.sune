@@ -1,11 +1,11 @@
 [
   {
     "id": "9ucskrw",
-    "name": "Renox's Personal Store",
+    "name": "Renox Personal Store",
     "pinned": false,
     "avatar": "",
     "url": "gh://sune-org/store@main/renox.sune",
-    "updatedAt": 1757036312852,
+    "updatedAt": 1757036493347,
     "settings": {
       "model": "openai/gpt-5",
       "temperature": 1,
