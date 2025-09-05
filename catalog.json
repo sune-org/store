@@ -54,6 +54,11 @@
     "id": "gjfq54x"
   },
   {
+    "name": "Storage Manager (LF)",
+    "raw": "https://raw.githubusercontent.com/sune-org/store/main/storagelf.sune",
+    "id": "d79ejic"
+  },
+  {
     "name": "SW",
     "raw": "https://raw.githubusercontent.com/sune-org/store/main/sw.sune",
     "id": "tbkc6m5"
