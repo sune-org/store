@@ -34,6 +34,11 @@
     "id": "bxvj8jx"
   },
   {
+    "name": "Fetch Stream",
+    "raw": "https://raw.githubusercontent.com/sune-org/store/main/fetch-stream.sune",
+    "id": "mpmar2o"
+  },
+  {
     "name": "Github Fetch",
     "raw": "https://raw.githubusercontent.com/sune-org/store/main/fetch.sune",
     "id": "zp2je1g"
