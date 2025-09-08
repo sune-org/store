@@ -7,10 +7,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: |
-          echo "[" >catalog.json;c=;
-          for f in *.sune;do [ -f "$f" ]||continue;raw="https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$GITHUB_REF_NAME/$f";n=$(jq -r '.[0].name//empty' "$f" 2>/dev/null);a=$(jq -r '.[0].avatar//empty' "$f" 2>/dev/null);i=$(jq -r '.[0].id//empty' "$f" 2>/dev/null);jq -rn --arg name "${n:-$f}" --arg raw "$raw" --arg avatar "$a" --arg id "$i" '({name:$name,raw:$raw}+(if $avatar=="" then {} else {avatar:$avatar} end)+(if $id=="" then {} else {id:$id} end))'|sed "1s/^/$c  /">>catalog.json;c=,;done
-          echo "]" >>catalog.json
-          t=$(mktemp);jq . catalog.json>"$t"&&mv "$t" catalog.json
+          echo "{" >catalog.json
+          c=
+          for d in */ .;do
+            [ "$d" = "./" ]&&key="root"||key="${d%/}"
+            files=$(find "$d" -maxdepth 1 -type f -name '*.sune'|grep -v '/\.'||:)
+            [ -z "$files" ]&&continue
+            echo "$c  \"$key\": [" >>catalog.json
+            cc=
+            for f in $files;do
+              raw="https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$GITHUB_REF_NAME/$f"
+              n=$(jq -r '.[0].name//empty' "$f" 2>/dev/null)
+              a=$(jq -r '.[0].avatar//empty' "$f" 2>/dev/null)
+              i=$(jq -r '.[0].id//empty' "$f" 2>/dev/null)
+              jq -rn --arg name "${n:-$(basename "$f")}" --arg raw "$raw" --arg avatar "$a" --arg id "$i" '({name:$name,raw:$raw}+(if $avatar=="" then {} else {avatar:$avatar} end)+(if $id=="" then {} else {id:$id} end))'|sed "1s/^/$cc    /" >>catalog.json
+              cc=,
+            done
+            echo "  ]" >>catalog.json
+            c=,
+          done
+          echo "}" >>catalog.json
+          t=$(mktemp)
+          jq . catalog.json >"$t" && mv "$t" catalog.json
           git config user.name bot
           git config user.email bot@users.noreply.github.com
           git add catalog.json
