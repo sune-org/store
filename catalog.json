@@ -111,11 +111,11 @@
     ]
   },
   {
-    "folder": "github",
+    "folder": "github-utilities",
     "sunes": [
       {
         "name": "Action Runner",
-        "raw": "https://raw.githubusercontent.com/sune-org/store/main/github/action_runner.sune",
+        "raw": "https://raw.githubusercontent.com/sune-org/store/main/github-utilities/action_runner.sune",
         "id": "hmhdnfo"
       }
     ]
