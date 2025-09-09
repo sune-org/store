@@ -109,5 +109,15 @@
         "id": "37uz2i8"
       }
     ]
+  },
+  {
+    "folder": "cloudflare-utilities",
+    "sunes": [
+      {
+        "name": "D1",
+        "raw": "https://raw.githubusercontent.com/sune-org/store/main/cloudflare-utilities/d1.sune",
+        "id": "xo6k2dz"
+      }
+    ]
   }
 ]
