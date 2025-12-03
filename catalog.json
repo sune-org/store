@@ -77,6 +77,11 @@
         "id": "9ucskrw"
       },
       {
+        "name": "Resend",
+        "raw": "https://raw.githubusercontent.com/sune-org/store/main/resend.sune",
+        "id": "ayzmwqh"
+      },
+      {
         "name": "StorageManager",
         "raw": "https://raw.githubusercontent.com/sune-org/store/main/storage.sune",
         "id": "gjfq54x"
