@@ -1,18 +1,11 @@
-on: push
+name: Catalog
+
+on:
+  push:
+
 permissions:
   contents: write
+
 jobs:
-  c:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: |
-          echo "[" >catalog.json;C=;
-          for d in . $(find . -mindepth 1 -type d ! -path '*/.*' -printf '%P\n');do S=;c=;for f in "$d"/*.sune;do [ -f "$f" ]||continue;rel=${f#./};raw="https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$GITHUB_REF_NAME/$rel";n=$(jq -r '.[0].name//empty' "$f" 2>/dev/null);a=$(jq -r '.[0].avatar//empty' "$f" 2>/dev/null);i=$(jq -r '.[0].id//empty' "$f" 2>/dev/null);bn=$(basename "$rel");j=$(jq -rn --arg name "${n:-$bn}" --arg raw "$raw" --arg avatar "$a" --arg id "$i" '({name:$name,raw:$raw}+(if $avatar=="" then {} else {avatar:$avatar} end)+(if $id=="" then {} else {id:$id} end))');S="$S$c$j";c=,;done;[ -n "$S" ]&&printf "%s" "$C{\"folder\":\"$d\",\"sunes\":[$S]}" >>catalog.json&&C=,;done
-          echo "]" >>catalog.json
-          t=$(mktemp);jq . catalog.json>"$t"&&mv "$t" catalog.json
-          git config user.name bot
-          git config user.email bot@users.noreply.github.com
-          git add catalog.json
-          git commit -m update || true
-          git push
+  catalog:
+    uses: sune-org/.github/.github/workflows/catalog.yml@main
