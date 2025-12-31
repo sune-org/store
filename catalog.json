@@ -149,6 +149,16 @@
     ]
   },
   {
+    "folder": "tutorials",
+    "sunes": [
+      {
+        "name": "Your Own Store",
+        "raw": "https://raw.githubusercontent.com/sune-org/store/main/tutorials/store-tutorial.sune",
+        "id": "61ah7v4"
+      }
+    ]
+  },
+  {
     "folder": "cloudflare-utilities",
     "sunes": [
       {
